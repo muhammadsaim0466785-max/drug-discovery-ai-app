@@ -41,12 +41,29 @@ export type DiscoveryResult = {
 };
 
 const diseaseDrugMap: Record<string, string> = {
+  acidreflux: "Omeprazole",
   fever: "Paracetamol",
   headache: "Aspirin",
   pain: "Ibuprofen",
   inflammation: "Ibuprofen",
   allergy: "Loratadine",
   cough: "Dextromethorphan",
+  diabetes: "Metformin",
+  dia: "Metformin",
+  hypertension: "Lisinopril",
+  bloodpressure: "Lisinopril",
+  asthma: "Albuterol",
+  infection: "Amoxicillin",
+  bacterialinfection: "Amoxicillin",
+  malaria: "Chloroquine",
+  depression: "Fluoxetine",
+  anxiety: "Diazepam",
+  cholesterol: "Atorvastatin",
+  migraine: "Sumatriptan",
+  nausea: "Ondansetron",
+  ulcer: "Omeprazole",
+  flu: "Oseltamivir",
+  covid: "Remdesivir",
 };
 
 function getBaseUrl() {
@@ -83,11 +100,30 @@ function formatNumber(value: number) {
   return Number(value.toFixed(2));
 }
 
+function normalizeDisease(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function resolveExistingDrugName(disease: string) {
+  const normalizedDisease = normalizeDisease(disease);
+  const exactMatch = diseaseDrugMap[normalizedDisease];
+
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const partialMatch = Object.entries(diseaseDrugMap).find(([key]) => {
+    return normalizedDisease.includes(key) || key.includes(normalizedDisease);
+  });
+
+  return partialMatch?.[1] || "Paracetamol";
+}
+
 export async function fetchExistingDrug(
   disease: string,
   baseUrl = getBaseUrl()
 ): Promise<ExistingDrug> {
-  const drugName = diseaseDrugMap[disease.toLowerCase()] || "Paracetamol";
+  const drugName = resolveExistingDrugName(disease);
   const url = `${baseUrl}/api/pubchem?name=${encodeURIComponent(drugName)}`;
 
   const response = await fetch(url, { cache: "no-store" });
