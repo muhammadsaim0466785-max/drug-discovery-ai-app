@@ -48,6 +48,7 @@ const diseaseDrugMap: Record<string, string> = {
   inflammation: "Ibuprofen",
   allergy: "Loratadine",
   cough: "Dextromethorphan",
+  cold: "Dextromethorphan",
   diabetes: "Metformin",
   dia: "Metformin",
   hypertension: "Lisinopril",
@@ -64,7 +65,26 @@ const diseaseDrugMap: Record<string, string> = {
   ulcer: "Omeprazole",
   flu: "Oseltamivir",
   covid: "Remdesivir",
+  arthritis: "Ibuprofen",
+  cancer: "Doxorubicin",
+  heartdisease: "Atorvastatin",
 };
+
+const fallbackDrugNames = [
+  "Aspirin",
+  "Ibuprofen",
+  "Metformin",
+  "Lisinopril",
+  "Albuterol",
+  "Amoxicillin",
+  "Doxorubicin",
+  "Loratadine",
+  "Atorvastatin",
+  "Sumatriptan",
+  "Ondansetron",
+  "Omeprazole",
+  "Fluoxetine",
+];
 
 function getBaseUrl() {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -116,7 +136,15 @@ function resolveExistingDrugName(disease: string) {
     return normalizedDisease.includes(key) || key.includes(normalizedDisease);
   });
 
-  return partialMatch?.[1] || "Paracetamol";
+  if (partialMatch) {
+    return partialMatch[1];
+  }
+
+  const hash = Array.from(normalizedDisease).reduce((sum, char) => {
+    return sum + char.charCodeAt(0);
+  }, 0);
+
+  return fallbackDrugNames[hash % fallbackDrugNames.length];
 }
 
 export async function fetchExistingDrug(
